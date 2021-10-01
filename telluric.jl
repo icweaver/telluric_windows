@@ -13,9 +13,6 @@ macro bind(def, element)
     end
 end
 
-# ╔═╡ 22c4e808-2aa9-4baa-b3d3-b2c80ab14e21
-using LaTeXStrings
-
 # ╔═╡ c990a226-221d-11ec-36e4-57b1b351b494
 using DataFrames, DataFrameMacros, FITSIO, Glob, Plots, PlutoUI, StatsPlots
 
@@ -23,7 +20,7 @@ using DataFrames, DataFrameMacros, FITSIO, Glob, Plots, PlutoUI, StatsPlots
 md"""
 # Working with tellurics 🌈
 
-In this notebook we will take a look at some line-by-line (LBL) data from [Moehler et. al (2014)](https://ui.adsabs.harvard.edu/abs/2014A%26A...568A...9M/abstract) to analyze the impact of telluric lines on transmission spectra. 
+In this notebook we will take a look at some line-by-line (LBL) data from [Moehler et. al (2014)](https://ui.adsabs.harvard.edu/abs/2014A%26A...568A...9M/abstract) to analyze the impact of telluric lines on transmission spectra. For full interactivity, download this notebook and give it a try!
 
 $(TableOfContents())
 """
@@ -43,7 +40,7 @@ For example, a measurement taken at an `airmass` of 1.0, `PWV` (precipitable wat
 !!! note
 	The file size for this dataset is a bit large, so we have included it already in the following directories of this repo
 
-	```julia	
+	```	
 	telluric_windows
 	├── data
 	│   ├── LBL_A10_s0_w200_R0300000_T.fits
@@ -51,115 +48,121 @@ For example, a measurement taken at an `airmass` of 1.0, `PWV` (precipitable wat
 	│   ├── LBL_A20_s0_w200_R0300000_T.fits
 	│   ├── LBL_A25_s0_w200_R0300000_T.fits
 	│   └── LBL_A30_s0_w200_R0300000_T.fits
-	├── figures
-	│   ├── meanflux_timeseries.pdf
-	│   ├── spectra_stack.pdf
-	│   ├── stdev_timeseries.pdf
-	│   └── temp.png
-	├── README.md
-	├── telluric_data
-	│   ├── pwv_R300k_airmass1.0
-	│   │   ├── LBL_A10_s0_w005_R0300000_T.fits
-	│   │   ├── LBL_A10_s0_w010_R0300000_T.fits
-	│   │   ├── LBL_A10_s0_w015_R0300000_T.fits
-	│   │   ├── LBL_A10_s0_w025_R0300000_T.fits
-	│   │   ├── LBL_A10_s0_w035_R0300000_T.fits
-	│   │   ├── LBL_A10_s0_w050_R0300000_T.fits
-	│   │   ├── LBL_A10_s0_w075_R0300000_T.fits
-	│   │   ├── LBL_A10_s0_w100_R0300000_T.fits
-	│   │   └── LBL_A10_s0_w200_R0300000_T.fits
-	│   ├── pwv_R300k_airmass1.5
-	│   │   ├── LBL_A15_s0_w005_R0300000_T.fits
-	│   │   ├── LBL_A15_s0_w010_R0300000_T.fits
-	│   │   ├── LBL_A15_s0_w015_R0300000_T.fits
-	│   │   ├── LBL_A15_s0_w025_R0300000_T.fits
-	│   │   ├── LBL_A15_s0_w035_R0300000_T.fits
-	│   │   ├── LBL_A15_s0_w050_R0300000_T.fits
-	│   │   ├── LBL_A15_s0_w075_R0300000_T.fits
-	│   │   ├── LBL_A15_s0_w100_R0300000_T.fits
-	│   │   └── LBL_A15_s0_w200_R0300000_T.fits
-	│   ├── pwv_R300k_airmass2.0
-	│   │   ├── LBL_A20_s0_w005_R0300000_T.fits
-	│   │   ├── LBL_A20_s0_w010_R0300000_T.fits
-	│   │   ├── LBL_A20_s0_w015_R0300000_T.fits
-	│   │   ├── LBL_A20_s0_w025_R0300000_T.fits
-	│   │   ├── LBL_A20_s0_w035_R0300000_T.fits
-	│   │   ├── LBL_A20_s0_w050_R0300000_T.fits
-	│   │   ├── LBL_A20_s0_w075_R0300000_T.fits
-	│   │   ├── LBL_A20_s0_w100_R0300000_T.fits
-	│   │   └── LBL_A20_s0_w200_R0300000_T.fits
-	│   ├── pwv_R300k_airmass2.5
-	│   │   ├── LBL_A25_s0_w005_R0300000_T.fits
-	│   │   ├── LBL_A25_s0_w010_R0300000_T.fits
-	│   │   ├── LBL_A25_s0_w015_R0300000_T.fits
-	│   │   ├── LBL_A25_s0_w025_R0300000_T.fits
-	│   │   ├── LBL_A25_s0_w035_R0300000_T.fits
-	│   │   ├── LBL_A25_s0_w050_R0300000_T.fits
-	│   │   ├── LBL_A25_s0_w075_R0300000_T.fits
-	│   │   ├── LBL_A25_s0_w100_R0300000_T.fits
-	│   │   └── LBL_A25_s0_w200_R0300000_T.fits
-	│   └── pwv_R300k_airmass3.0
-	│       ├── LBL_A30_s0_w005_R0300000_T.fits
-	│       ├── LBL_A30_s0_w010_R0300000_T.fits
-	│       ├── LBL_A30_s0_w015_R0300000_T.fits
-	│       ├── LBL_A30_s0_w025_R0300000_T.fits
-	│       ├── LBL_A30_s0_w035_R0300000_T.fits
-	│       ├── LBL_A30_s0_w050_R0300000_T.fits
-	│       ├── LBL_A30_s0_w075_R0300000_T.fits
-	│       ├── LBL_A30_s0_w100_R0300000_T.fits
-	│       └── LBL_A30_s0_w200_R0300000_T.fits
-	├── telluric.ipynb
-	└── telluric.jl
+	└── telluric_data
+		├── pwv_R300k_airmass1.0
+		├── pwv_R300k_airmass1.5
+		├── pwv_R300k_airmass2.0
+		├── pwv_R300k_airmass2.5
+		└── pwv_R300k_airmass3.0
 	```
+"""
+
+# ╔═╡ ca904ae4-298d-47da-ae31-c0f108c61f38
+md"""
+To start we will just select a file from the `data` folder below:
 """
 
 # ╔═╡ 2c3d75d8-c1d9-4069-8ee8-9c3f79b7f671
 @bind fpath Select(glob("data/*.fits"))
 
-# ╔═╡ 46d4cfe9-d633-4db9-a093-036fe4840191
-fpath
+# ╔═╡ 6fc10498-d582-473b-9be7-908c6850abf4
+md"""
+!!! tip
+	Selecting different file paths from the dropdown menu above will automatically update the rest of this notebook accordingly 🚀
+"""
 
-# ╔═╡ f3bb49cc-4bb7-499b-8c31-8df058b6626b
-AM = match(r"(?<=LBL_).*(?=_s0)", fpath).match
+# ╔═╡ 0709d2bc-576b-48ca-a873-ca13011dc30e
+md"""
+With **$(basename(fpath))** selected, we now take a look at what is inside the fits file:
+"""
 
 # ╔═╡ d3104fec-8de3-4df5-81b1-22272da47840
 f = FITS(fpath)
 
-# ╔═╡ 243737e3-9321-4601-8938-932f92c2f9d6
-df_all = DataFrame(f[2])
+# ╔═╡ b0877af6-33d9-435b-b6e8-fbd02e8fd7c5
+f[1], f[2]
 
-# ╔═╡ 5837f1b5-cd67-4747-98bf-0d0054d061d6
-df = @subset df_all 0.41 .≤ :lam .≤ 0.425
+# ╔═╡ 492cc0b2-ad77-4a96-a8d1-5579918b54e4
+md"""
+So it looks like the first extension is an empty placeholder for image data, while the second extension contains a table with the actual data. Let's look at that next:
+"""
+
+# ╔═╡ 243737e3-9321-4601-8938-932f92c2f9d6
+df_all = DataFrame(f[2]); describe(df_all)
+
+# ╔═╡ 13bda424-9796-4794-b3d3-e69feec3e660
+md"""
+Ok, we have the four variables shown in the first column to work with, and none of them have missing values, sweet. The header does not really define what each column means:
+"""
+
+# ╔═╡ 6581ffe6-f83c-442e-a7f9-bf87a3efe116
+read_header(f[2])
+
+# ╔═╡ 843882bc-8a05-4856-bc27-baa0342dd556
+md"""
+But `trans`, `mnstrans`, and `plstrans` all look to be identical to each other, and `lam` looks to be wavelength measurements in microns. For our purposes then, we will just focus on the first two columns.
+"""
+
+# ╔═╡ cbc2b435-1908-4ccd-bd8e-c4d4ce548808
+@bind λ_range RangeSlider(0.410:0.001:0.425)
+
+# ╔═╡ ea6d7151-b06d-4062-b6ae-3c1fb715804a
+λ_lower, λ_upper = extrema(λ_range);
+
+# ╔═╡ e7eae76d-e43f-48fc-950c-0a5f1e551ca9
+md"""
+## Single transmission spectrum
+
+We will restrict ourselves to looking in-between $(λ_lower*1e3) and $(λ_upper*1e3) nanometers for the rest of this analysis:
+"""
+
+# ╔═╡ fb29df0f-2975-447b-bd15-47b6af004c5f
+df = @subset df_all λ_lower .≤ :lam .≤ λ_upper
+
+# ╔═╡ f3bb49cc-4bb7-499b-8c31-8df058b6626b
+AM = match(r"(?<=LBL_).*(?=_s0)", fpath).match;
 
 # ╔═╡ 78e1c48e-89b0-49c7-aedd-b3d5c8d0d370
 @df df plot(:lam*1e3, :trans, xlabel="λ (nm)", ylabel="f", label="$AM")
 
+# ╔═╡ 894da436-87f1-4d7c-a20e-6ccee3f38ab8
+md"""
+## Transmission spectra over time
+
+To simulate how these model spectra might vary with time, we can make the same plot above, but measured at different airmasses. We do this to emulate a source moving across the sky during the night. The models for this live in `data`, which we show below:
+"""
+
 # ╔═╡ 9cba2b1c-93c7-4b9e-8d53-e7b7df4b3247
 begin
 	AMs, dfs = [], []
-	for fpath in sort(glob("data/*.fits"))
+	for fpath in sort(glob("data/*.fits"), rev=true)
 		push!(AMs, match(r"(?<=LBL_).*(?=_s0)", fpath).match)
-		df = FITS(fpath)[2] |> DataFrame
-		push!(dfs, df)
+		dfi = begin
+			d = DataFrame(FITS(fpath)[2])
+			@subset d λ_lower .≤ :lam .≤ λ_upper
+		end
+		push!(dfs, dfi)
 	end
 end
 
-# ╔═╡ 3a37c0f7-72df-433b-be28-5bed5c23fc62
-begin
+# ╔═╡ 8a92f344-0fa0-4825-aa51-6d1c0eb197da
+let
 	p = plot(xlabel="λ (nm)", ylabel="f")
 	
 	for (AM, df) in zip(AMs, dfs)
-		#@df df plot!(p, :lam*1e3, :trans, label="$AM")
+		@df df plot!(p, :lam*1e3, :trans, label="$AM")
 	end
 	
 	p
 end
 
+# ╔═╡ d635252e-0a87-40b4-847e-b03eb0889b2d
+md"""
+## Notebook setup
+"""
+
 # ╔═╡ 7becb8d0-6828-40b4-9967-a2f6490ce104
 plotly()
-
-# ╔═╡ abb5e2fb-8c3e-46b3-8204-1b96c533b992
-
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -168,7 +171,6 @@ DataFrameMacros = "75880514-38bc-4a95-a458-c2aea5a3a702"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 FITSIO = "525bcba6-941b-5504-bd06-fd0dc1a4d2eb"
 Glob = "c27321d9-0574-5035-807b-f59d2c89b15c"
-LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 StatsPlots = "f3b207a7-027a-5e70-b257-86293d7955fd"
@@ -178,7 +180,6 @@ DataFrameMacros = "~0.1.1"
 DataFrames = "~1.2.2"
 FITSIO = "~0.16.9"
 Glob = "~1.3.0"
-LaTeXStrings = "~1.2.1"
 Plots = "~1.22.3"
 PlutoUI = "~0.7.14"
 StatsPlots = "~0.14.28"
@@ -1302,19 +1303,29 @@ version = "0.9.1+5"
 
 # ╔═╡ Cell order:
 # ╟─6c5eae39-0175-4609-b10f-0f6d5c0ac2c6
-# ╠═f7b3cce8-712c-4a0d-9578-2610ce0608a7
+# ╟─f7b3cce8-712c-4a0d-9578-2610ce0608a7
+# ╟─ca904ae4-298d-47da-ae31-c0f108c61f38
 # ╠═2c3d75d8-c1d9-4069-8ee8-9c3f79b7f671
-# ╠═46d4cfe9-d633-4db9-a093-036fe4840191
-# ╠═f3bb49cc-4bb7-499b-8c31-8df058b6626b
+# ╟─6fc10498-d582-473b-9be7-908c6850abf4
+# ╟─0709d2bc-576b-48ca-a873-ca13011dc30e
 # ╠═d3104fec-8de3-4df5-81b1-22272da47840
+# ╠═b0877af6-33d9-435b-b6e8-fbd02e8fd7c5
+# ╟─492cc0b2-ad77-4a96-a8d1-5579918b54e4
 # ╠═243737e3-9321-4601-8938-932f92c2f9d6
-# ╠═5837f1b5-cd67-4747-98bf-0d0054d061d6
+# ╟─13bda424-9796-4794-b3d3-e69feec3e660
+# ╠═6581ffe6-f83c-442e-a7f9-bf87a3efe116
+# ╟─843882bc-8a05-4856-bc27-baa0342dd556
+# ╟─e7eae76d-e43f-48fc-950c-0a5f1e551ca9
+# ╟─cbc2b435-1908-4ccd-bd8e-c4d4ce548808
 # ╠═78e1c48e-89b0-49c7-aedd-b3d5c8d0d370
+# ╠═fb29df0f-2975-447b-bd15-47b6af004c5f
+# ╠═ea6d7151-b06d-4062-b6ae-3c1fb715804a
+# ╠═f3bb49cc-4bb7-499b-8c31-8df058b6626b
+# ╟─894da436-87f1-4d7c-a20e-6ccee3f38ab8
 # ╠═9cba2b1c-93c7-4b9e-8d53-e7b7df4b3247
-# ╠═3a37c0f7-72df-433b-be28-5bed5c23fc62
+# ╠═8a92f344-0fa0-4825-aa51-6d1c0eb197da
+# ╟─d635252e-0a87-40b4-847e-b03eb0889b2d
 # ╠═7becb8d0-6828-40b4-9967-a2f6490ce104
-# ╠═22c4e808-2aa9-4baa-b3d3-b2c80ab14e21
 # ╠═c990a226-221d-11ec-36e4-57b1b351b494
-# ╠═abb5e2fb-8c3e-46b3-8204-1b96c533b992
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
